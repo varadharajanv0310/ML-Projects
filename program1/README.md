@@ -36,6 +36,19 @@ end-to-end.
 
 A Jupyter version is in `program1.ipynb` (`jupyter notebook program1.ipynb`).
 
+## Dashboard
+
+```bash
+python dashboard.py
+```
+
+Generates `output/dashboard.html` — a self-contained interactive dashboard
+(KPI tiles, top 10 tracks by streams, releases by year, playlist reach vs.
+YouTube views, with hover tooltips, per-chart data tables, and light/dark
+themes). It reads the same CSV as `program1.py` (running it first if the data
+file is missing) and works identically with the real Kaggle download. Open the
+generated file in any browser.
+
 ## Fixes vs. the lab manual code
 
 - `matplotlib.pylot` → `matplotlib.pyplot`
