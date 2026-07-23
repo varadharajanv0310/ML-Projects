@@ -1,0 +1,498 @@
+<title>Spotify Songs 2024 — Program 1 Dashboard</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:       #f9f9f7;
+    --surface:    #fcfcfb;
+    --ink:        #0b0b0b;
+    --ink-2:      #52514e;
+    --muted:      #898781;
+    --grid:       #e1e0d9;
+    --baseline:   #c3c2b7;
+    --border:     rgba(11, 11, 11, 0.10);
+    --accent:     #2a78d6;
+    --accent-dim: #9ec5f4;
+    --warn-bg:    #fdf3dd;
+    --warn-ink:   #6b4a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:       #0d0d0d;
+      --surface:    #1a1a19;
+      --ink:        #ffffff;
+      --ink-2:      #c3c2b7;
+      --muted:      #898781;
+      --grid:       #2c2c2a;
+      --baseline:   #383835;
+      --border:     rgba(255, 255, 255, 0.10);
+      --accent:     #3987e5;
+      --accent-dim: #1c5cab;
+      --warn-bg:    #2e2410;
+      --warn-ink:   #e8c780;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:       #0d0d0d;
+    --surface:    #1a1a19;
+    --ink:        #ffffff;
+    --ink-2:      #c3c2b7;
+    --muted:      #898781;
+    --grid:       #2c2c2a;
+    --baseline:   #383835;
+    --border:     rgba(255, 255, 255, 0.10);
+    --accent:     #3987e5;
+    --accent-dim: #1c5cab;
+    --warn-bg:    #2e2410;
+    --warn-ink:   #e8c780;
+  }
+
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 28px 24px 48px;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+
+  header { margin-bottom: 24px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 6px;
+  }
+  h1 { font-size: 26px; margin: 0 0 6px; text-wrap: balance; }
+  .sub { color: var(--ink-2); font-size: 14px; margin: 0; }
+  .chip {
+    display: inline-block; margin-left: 8px; padding: 2px 9px;
+    border-radius: 999px; font-size: 12px; font-weight: 600;
+    background: var(--warn-bg); color: var(--warn-ink);
+    vertical-align: 1px;
+  }
+
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px; margin-bottom: 14px;
+  }
+  .tile {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .tile .k {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+  }
+  .tile .v { font-size: 28px; font-weight: 650; line-height: 1.1; overflow-wrap: anywhere; }
+  .tile .s { font-size: 12.5px; color: var(--ink-2); margin-top: 6px; }
+
+  .grid2 {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;
+  }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+
+  figure.card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px 14px; margin: 0;
+  }
+  .card-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 2px;
+  }
+  figcaption h2 { font-size: 15px; font-weight: 650; margin: 0 0 2px; }
+  figcaption p { font-size: 12.5px; color: var(--muted); margin: 0; }
+  .tbl-toggle {
+    flex: none; font: inherit; font-size: 12px; font-weight: 600;
+    color: var(--accent); background: none; border: none;
+    padding: 4px 2px; cursor: pointer; border-radius: 4px;
+  }
+  .tbl-toggle:hover { text-decoration: underline; }
+  .tbl-toggle:focus-visible, .hbar-row:focus-visible, .hit:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .chart-body { margin-top: 12px; }
+
+  /* horizontal bars */
+  .hbar-row {
+    display: grid; grid-template-columns: 200px 1fr; align-items: center;
+    gap: 10px; padding: 3px 0; border-radius: 4px;
+  }
+  @media (max-width: 560px) { .hbar-row { grid-template-columns: 130px 1fr; } }
+  .hbar-name { min-width: 0; }
+  .hbar-name .t {
+    font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .hbar-name .a {
+    font-size: 11.5px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .hbar-track { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .hbar-bar {
+    height: 16px; border-radius: 0 4px 4px 0; background: var(--accent);
+    flex: none; min-width: 2px;
+  }
+  .hbar-row:hover .hbar-bar, .hbar-row:focus-visible .hbar-bar { filter: brightness(1.15); }
+  .hbar-val {
+    font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  svg { display: block; width: 100%; height: auto; }
+  svg text {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  .gridline { stroke: var(--grid); stroke-width: 1; }
+  .baseline { stroke: var(--baseline); stroke-width: 1; }
+  .ticktext { fill: var(--muted); font-size: 11px; }
+  .col { fill: var(--accent); pointer-events: none; }
+  .col-hit { fill: transparent; cursor: default; }
+  .col-hit:hover + .col, .col-hit:focus-visible + .col { filter: brightness(1.15); }
+  .dot { fill: var(--accent); stroke: var(--surface); stroke-width: 2; pointer-events: none; }
+  .hit { fill: transparent; }
+  .hit:hover + .dot, .hit:focus-visible + .dot { filter: brightness(1.25); }
+
+  /* tables (accessibility twin) */
+  .chart-table { display: none; overflow-x: auto; margin-top: 12px; }
+  .chart-table.on { display: block; }
+  .chart-body.off { display: none; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  th, td {
+    text-align: left; padding: 5px 10px 5px 0;
+    border-bottom: 1px solid var(--grid);
+  }
+  th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); font-weight: 600;
+  }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* tooltip */
+  #tip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: var(--ink); color: var(--page);
+    border-radius: 6px; padding: 7px 10px; font-size: 12px; max-width: 260px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  }
+  #tip .tv { font-weight: 700; font-size: 13px; }
+  #tip .tl { opacity: 0.75; }
+
+  footer { margin-top: 22px; font-size: 12px; color: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) {
+    .hbar-bar, .col { transition: filter 120ms ease; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">21CSC305P · Machine Learning Lab · Program 1</p>
+    <h1>Most Streamed Spotify Songs 2024</h1>
+    <p class="sub" id="subtitle"></p>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <figure class="card" id="card-tracks">
+    <div class="card-head">
+      <figcaption>
+        <h2>Top 10 tracks by Spotify streams</h2>
+        <p>All-time streams per track</p>
+      </figcaption>
+      <button class="tbl-toggle" type="button">View data</button>
+    </div>
+    <div class="chart-body"></div>
+    <div class="chart-table"></div>
+  </figure>
+
+  <div class="grid2">
+    <figure class="card" id="card-years">
+      <div class="card-head">
+        <figcaption>
+          <h2>Releases by year</h2>
+          <p>Tracks in the chart per release year</p>
+        </figcaption>
+        <button class="tbl-toggle" type="button">View data</button>
+      </div>
+      <div class="chart-body"></div>
+      <div class="chart-table"></div>
+    </figure>
+
+    <figure class="card" id="card-scatter">
+      <div class="card-head">
+        <figcaption>
+          <h2>Playlist reach vs. YouTube views</h2>
+          <p>x: Spotify playlist reach · y: YouTube views · one dot per track</p>
+        </figcaption>
+        <button class="tbl-toggle" type="button">View data</button>
+      </div>
+      <div class="chart-body"></div>
+      <div class="chart-table"></div>
+    </figure>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+<div id="tip" role="status"></div>
+
+<script>
+  const DATA = __DATA__;
+
+  const $ = (sel, el) => (el || document).querySelector(sel);
+
+  function fmt(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(n >= 1e10 ? 0 : 1) + "B";
+    if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + "M";
+    if (n >= 1e3) return (n / 1e3).toFixed(0) + "K";
+    return String(n);
+  }
+  const full = n => n.toLocaleString("en-US");
+
+  /* ---- tooltip (textContent only — labels are data) ---- */
+  const tip = $("#tip");
+  function showTip(evt, value, label) {
+    tip.textContent = "";
+    const v = document.createElement("div");
+    v.className = "tv";
+    v.textContent = value;
+    const l = document.createElement("div");
+    l.className = "tl";
+    l.textContent = label;
+    tip.append(v, l);
+    tip.style.display = "block";
+    moveTip(evt);
+  }
+  function moveTip(evt) {
+    const pad = 14;
+    let x = evt.clientX + pad, y = evt.clientY + pad;
+    const r = tip.getBoundingClientRect();
+    if (x + r.width > innerWidth - 8) x = evt.clientX - r.width - pad;
+    if (y + r.height > innerHeight - 8) y = evt.clientY - r.height - pad;
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  }
+  const hideTip = () => (tip.style.display = "none");
+  addEventListener("scroll", hideTip, true);
+
+  function hover(el, getText) {
+    el.addEventListener("pointerenter", e => showTip(e, ...getText()));
+    el.addEventListener("pointermove", moveTip);
+    el.addEventListener("pointerleave", hideTip);
+    el.addEventListener("focus", () => {
+      const r = el.getBoundingClientRect();
+      showTip({ clientX: r.right, clientY: r.top }, ...getText());
+    });
+    el.addEventListener("blur", hideTip);
+  }
+
+  /* ---- header + KPIs ---- */
+  $("#subtitle").textContent =
+    `${full(DATA.kpis.tracks)} tracks · loaded from “${DATA.source}”`;
+  if (DATA.synthetic) {
+    const c = document.createElement("span");
+    c.className = "chip";
+    c.textContent = "synthetic data";
+    $("#subtitle").append(c);
+    $("#foot").textContent =
+      "Generated from the synthetic stand-in CSV (real Kaggle file not present). " +
+      "Re-run dashboard.py after downloading the real dataset.";
+  } else {
+    $("#foot").textContent = "Generated by dashboard.py from the Kaggle dataset.";
+  }
+
+  const tiles = [
+    ["Tracks", full(DATA.kpis.tracks), "rows in the dataset"],
+    ["Spotify streams", fmt(DATA.kpis.totalStreams), full(DATA.kpis.totalStreams) + " total"],
+    ["YouTube views", fmt(DATA.kpis.totalViews), full(DATA.kpis.totalViews) + " total"],
+    ["Top artist", DATA.kpis.topArtist,
+      `${fmt(DATA.kpis.topArtistStreams)} streams · ${DATA.kpis.topArtistTracks} track` +
+      (DATA.kpis.topArtistTracks === 1 ? "" : "s")],
+  ];
+  for (const [k, v, s] of tiles) {
+    const t = document.createElement("div");
+    t.className = "tile";
+    for (const [cls, text] of [["k", k], ["v", v], ["s", s]]) {
+      const d = document.createElement("div");
+      d.className = cls;
+      d.textContent = text;
+      t.append(d);
+    }
+    $("#kpis").append(t);
+  }
+
+  /* ---- table view toggles ---- */
+  function makeTable(card, cols, rows) {
+    const wrap = $(".chart-table", card);
+    const tbl = document.createElement("table");
+    const thead = tbl.createTHead().insertRow();
+    for (const c of cols) {
+      const th = document.createElement("th");
+      th.textContent = c.label;
+      if (c.num) th.className = "num";
+      thead.append(th);
+    }
+    const tb = tbl.createTBody();
+    for (const r of rows) {
+      const tr = tb.insertRow();
+      for (const c of cols) {
+        const td = tr.insertCell();
+        td.textContent = c.num ? full(r[c.key]) : r[c.key];
+        if (c.num) td.className = "num";
+      }
+    }
+    wrap.append(tbl);
+    const btn = $(".tbl-toggle", card);
+    btn.addEventListener("click", () => {
+      const on = wrap.classList.toggle("on");
+      $(".chart-body", card).classList.toggle("off", on);
+      btn.textContent = on ? "View chart" : "View data";
+    });
+  }
+
+  /* ---- chart 1: top tracks, horizontal bars ---- */
+  {
+    const card = $("#card-tracks");
+    const body = $(".chart-body", card);
+    const max = Math.max(...DATA.topTracks.map(d => d.streams));
+    for (const d of DATA.topTracks) {
+      const row = document.createElement("div");
+      row.className = "hbar-row";
+      row.tabIndex = 0;
+      const name = document.createElement("div");
+      name.className = "hbar-name";
+      const t = document.createElement("div");
+      t.className = "t";
+      t.textContent = d.track;
+      const a = document.createElement("div");
+      a.className = "a";
+      a.textContent = d.artist;
+      name.append(t, a);
+      const track = document.createElement("div");
+      track.className = "hbar-track";
+      const bar = document.createElement("div");
+      bar.className = "hbar-bar";
+      bar.style.width = (d.streams / max * 78) + "%";
+      const val = document.createElement("div");
+      val.className = "hbar-val";
+      val.textContent = fmt(d.streams);
+      track.append(bar, val);
+      row.append(name, track);
+      hover(row, () => [full(d.streams) + " streams", `${d.track} — ${d.artist}`]);
+      body.append(row);
+    }
+    makeTable(card, [
+      { key: "track", label: "Track" },
+      { key: "artist", label: "Artist" },
+      { key: "streams", label: "Spotify streams", num: true },
+    ], DATA.topTracks);
+  }
+
+  const NS = "http://www.w3.org/2000/svg";
+  function svgEl(tag, attrs) {
+    const el = document.createElementNS(NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function niceTicks(max, n) {
+    const raw = max / n;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw);
+    const out = [];
+    for (let v = 0; v <= max + 1e-9; v += step) out.push(v);
+    return out;
+  }
+
+  /* ---- chart 2: releases by year, columns ---- */
+  {
+    const card = $("#card-years");
+    const W = 460, H = 240, m = { t: 12, r: 8, b: 26, l: 30 };
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+      "aria-label": "Column chart of track releases per year" });
+    const years = DATA.byYear;
+    const maxC = Math.max(...years.map(d => d.count));
+    const ticks = niceTicks(maxC, 4);
+    const yMax = ticks[ticks.length - 1];
+    const px = v => m.l + v * (W - m.l - m.r);
+    const py = v => m.t + (1 - v / yMax) * (H - m.t - m.b);
+    for (const t of ticks) {
+      svg.append(svgEl("line", { x1: m.l, x2: W - m.r, y1: py(t), y2: py(t),
+        class: t === 0 ? "baseline" : "gridline" }));
+      const lbl = svgEl("text", { x: m.l - 6, y: py(t) + 3.5,
+        "text-anchor": "end", class: "ticktext" });
+      lbl.textContent = t;
+      svg.append(lbl);
+    }
+    const n = years.length;
+    const slot = (W - m.l - m.r) / n;
+    const bw = Math.min(26, slot * 0.6);
+    years.forEach((d, i) => {
+      const x = px((i + 0.5) / n) - bw / 2;
+      const y = py(d.count);
+      const h = py(0) - y;
+      const col = svgEl("path", { class: "col", d:
+        `M${x},${py(0)} V${y + 4} Q${x},${y} ${x + 4},${y} H${x + bw - 4} ` +
+        `Q${x + bw},${y} ${x + bw},${y + 4} V${py(0)} Z` });
+      if (h < 5) col.setAttribute("d",
+        `M${x},${py(0)} V${y} H${x + bw} V${py(0)} Z`);
+      const hit = svgEl("rect", { class: "col-hit", x: x - slot * 0.2, y: m.t,
+        width: bw + slot * 0.4, height: H - m.t - m.b, tabindex: 0 });
+      hover(hit, () => [d.count + (d.count === 1 ? " track" : " tracks"),
+        "released in " + d.year]);
+      svg.append(hit, col);
+      const xl = svgEl("text", { x: x + bw / 2, y: H - 8,
+        "text-anchor": "middle", class: "ticktext" });
+      xl.textContent = "’" + String(d.year).slice(2);
+      svg.append(xl);
+    });
+    $(".chart-body", card).append(svg);
+    makeTable(card, [
+      { key: "year", label: "Year" },
+      { key: "count", label: "Tracks", num: true },
+    ], years);
+  }
+
+  /* ---- chart 3: reach vs views, scatter ---- */
+  {
+    const card = $("#card-scatter");
+    const W = 460, H = 240, m = { t: 12, r: 26, b: 30, l: 42 };
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+      "aria-label": "Scatter plot of Spotify playlist reach against YouTube views" });
+    const pts = DATA.scatter;
+    const maxX = Math.max(...pts.map(d => d.reach));
+    const maxY = Math.max(...pts.map(d => d.views));
+    const xT = niceTicks(maxX, 4), yT = niceTicks(maxY, 4);
+    const xMax = xT[xT.length - 1], yMax = yT[yT.length - 1];
+    const px = v => m.l + v / xMax * (W - m.l - m.r);
+    const py = v => m.t + (1 - v / yMax) * (H - m.t - m.b);
+    for (const t of yT) {
+      svg.append(svgEl("line", { x1: m.l, x2: W - m.r, y1: py(t), y2: py(t),
+        class: t === 0 ? "baseline" : "gridline" }));
+      const lbl = svgEl("text", { x: m.l - 6, y: py(t) + 3.5,
+        "text-anchor": "end", class: "ticktext" });
+      lbl.textContent = fmt(t);
+      svg.append(lbl);
+    }
+    for (const t of xT) {
+      const lbl = svgEl("text", { x: px(t), y: H - 10,
+        "text-anchor": "middle", class: "ticktext" });
+      lbl.textContent = fmt(t);
+      svg.append(lbl);
+    }
+    for (const d of pts) {
+      const cx = px(d.reach), cy = py(d.views);
+      const dot = svgEl("circle", { class: "dot", cx, cy, r: 4.5 });
+      const hit = svgEl("circle", { class: "hit", cx, cy, r: 13, tabindex: 0 });
+      hover(hit, () => [
+        `${fmt(d.views)} views · ${fmt(d.reach)} reach`,
+        `${d.track} — ${d.artist}`,
+      ]);
+      svg.append(hit, dot);
+    }
+    $(".chart-body", card).append(svg);
+    makeTable(card, [
+      { key: "track", label: "Track" },
+      { key: "artist", label: "Artist" },
+      { key: "reach", label: "Playlist reach", num: true },
+      { key: "views", label: "YouTube views", num: true },
+    ], pts);
+  }
+</script>
