@@ -1,0 +1,4 @@
+# generated at runtime
+data/
+output/
+__pycache__/
